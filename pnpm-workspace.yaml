@@ -1,5 +1,11 @@
-pmOnFail: ignore
+onlyBuiltDependencies:
+  - '@google/genai'
+  - protobufjs
+  - '@tailwindcss/oxide'
+  - sharp
 
-minimumReleaseAgeExclude:
-  - '@next/*'
-  - next
+allowBuilds:
+  '@google/genai': true
+  protobufjs: true
+  '@tailwindcss/oxide': true
+  sharp: true
