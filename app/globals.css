@@ -64,3 +64,97 @@ button { cursor: pointer; }
 /* Trade modal extra row */
 .order-summary span { display: flex; justify-content: space-between; }
 
+/* ── Quantity stepper ────────────────────────────────────────────────────── */
+.qty-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 4px; color: #7c9092; font-size: 10px; }
+.qty-control { display: flex; align-items: center; gap: 0; border: 1px solid #2d4145; border-radius: 6px; overflow: hidden; }
+.qty-control button { border: 0; background: #151f22; color: #a0b4b6; width: 30px; height: 30px; font-size: 16px; line-height: 1; display: grid; place-items: center; }
+.qty-control button:hover { background: #1e2e32; color: #35d399; }
+.qty-control input { border: 0; outline: 0; background: #0e191c; color: #e0edea; text-align: center; width: 60px; height: 30px; font-size: 12px; font-weight: 700; -moz-appearance: textfield; }
+.qty-control input::-webkit-outer-spin-button,
+.qty-control input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ── Trade Log panel ─────────────────────────────────────────────────────── */
+.trade-log-panel { display: flex; flex-direction: column; gap: 10px; }
+.trade-log-account { display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid #2a3f45; border-radius: 8px; padding: 12px 13px; background: linear-gradient(135deg, #101c1f, #111b1d); }
+.trade-balance-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.trade-balance-row strong { font-size: 20px; letter-spacing: -.03em; }
+.trade-balance-row svg { color: #35d399; }
+.trade-pnl-badge { border-radius: 4px; padding: 2px 6px; font-size: 9px; font-weight: 800; letter-spacing: .07em; }
+.trade-pnl-badge.positive { background: #14392f; color: #35d399; }
+.trade-pnl-badge.negative { background: #3e2029; color: #fb7185; }
+
+.trade-log-list { display: flex; flex-direction: column; gap: 7px; max-height: 340px; overflow-y: auto; padding-right: 2px; }
+.trade-log-list::-webkit-scrollbar { width: 3px; }
+.trade-log-list::-webkit-scrollbar-track { background: transparent; }
+.trade-log-list::-webkit-scrollbar-thumb { background: #2d4048; border-radius: 3px; }
+
+.trade-log-entry { border: 1px solid #26373d; border-radius: 7px; padding: 10px 11px; background: #101a1d; display: flex; flex-direction: column; gap: 6px; }
+.trade-log-row { display: flex; align-items: center; gap: 8px; }
+.trade-dir-badge { display: inline-flex; align-items: center; gap: 3px; border-radius: 4px; padding: 2px 7px; font-size: 9px; font-weight: 800; letter-spacing: .07em; }
+.trade-dir-badge.buy  { background: #14392f; color: #35d399; }
+.trade-dir-badge.sell { background: #3e2029; color: #fb7185; }
+.trade-log-details { display: flex; align-items: center; gap: 8px; color: #8ea4a6; font-size: 10px; }
+.trade-log-details b { color: #d4e0dd; }
+.trade-log-balance { font-size: 9px; color: #6d8488; }
+.trade-log-balance b { color: #a8bab8; font-size: 10px; }
+
+/* ── Signals panel ───────────────────────────────────────────────────────── */
+.signals-panel { display: flex; flex-direction: column; gap: 10px; padding: 14px 12px; max-height: 320px; overflow-y: auto; }
+.signals-panel::-webkit-scrollbar { width: 3px; }
+.signals-panel::-webkit-scrollbar-thumb { background: #2d4048; border-radius: 3px; }
+.signal-card { border: 1px solid #26373d; border-radius: 7px; padding: 11px 13px; background: #101a1d; display: flex; flex-direction: column; gap: 7px; }
+.signal-header { display: flex; justify-content: space-between; align-items: center; }
+.signal-name { display: flex; align-items: center; gap: 6px; color: #a8b8b5; font-size: 10px; font-weight: 700; letter-spacing: .05em; }
+.signal-name svg { color: #35d399; }
+.signal-badge { border-radius: 4px; padding: 2px 6px; font-size: 8px; font-weight: 800; letter-spacing: .08em; }
+.signal-badge.positive { background: #14392f; color: #35d399; }
+.signal-badge.negative { background: #3e2029; color: #fb7185; }
+.signal-badge.neutral { background: #253237; color: #9bacad; }
+.signal-bar-wrap { height: 4px; background: #26363b; border-radius: 4px; overflow: hidden; }
+.signal-bar { height: 100%; border-radius: 4px; transition: width 0.8s ease, background 0.4s ease; }
+.signal-desc { font-size: 10px; color: #8ea4a6; line-height: 1.55; margin: 0; }
+.drivers-card .drivers-list { margin: 4px 0 0; padding-left: 16px; color: #aebdb9; font-size: 10px; line-height: 1.65; }
+.drivers-card .drivers-list li::marker { color: #35d399; }
+
+/* ── Depth placeholder ───────────────────────────────────────────────────── */
+.depth-placeholder { height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #718487; font-size: 11px; text-align: center; }
+.depth-placeholder p { margin: 0; max-width: 220px; line-height: 1.5; }
+
+/* ── Remove custom ticker button ─────────────────────────────────────────── */
+.asset-row { position: relative; }
+.remove-ticker-btn { position: absolute; top: 6px; right: 6px; border: 0; background: transparent; color: #718487; border-radius: 4px; width: 18px; height: 18px; display: none; place-items: center; padding: 0; }
+.asset-row:hover .remove-ticker-btn { display: grid; }
+.remove-ticker-btn:hover { color: #fb7185; background: #3e2029; }
+
+/* ── Add asset modal input ───────────────────────────────────────────────── */
+.add-asset-input-row { margin: 4px 0 0; }
+.add-asset-input-row input { width: 100%; border: 1px solid #2d4145; border-radius: 6px; background: #0e191c; color: #e0edea; height: 40px; padding: 0 12px; font-size: 14px; font-weight: 700; letter-spacing: .08em; outline: 0; }
+.add-asset-input-row input:focus { border-color: #35d39966; box-shadow: 0 0 0 2px #35d39922; }
+
+/* ── Depth tab content ───────────────────────────────────────────────────── */
+.depth-content { display: flex; flex-direction: column; gap: 8px; }
+
+/* Stats bar */
+.ob-stats { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; padding: 8px 10px; background: #0e1a1d; border-radius: 7px; border: 1px solid #1e2f33; }
+.ob-stat { display: flex; flex-direction: column; gap: 2px; min-width: 80px; flex: 1; }
+.ob-stat span { font-size: 8px; text-transform: uppercase; letter-spacing: .07em; color: #718487; }
+.ob-stat strong { font-size: 12px; font-weight: 700; color: #d4e0dd; }
+.ob-mid { border-left: 1px solid #2a3d41; border-right: 1px solid #2a3d41; padding: 0 10px; }
+.ob-source-badge { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 9px; color: #718487; white-space: nowrap; }
+.ob-source-badge i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.legend-mock { background: #f59e0b !important; animation: none !important; }
+
+/* Order book table */
+.ob-table { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ob-col { display: flex; flex-direction: column; gap: 1px; }
+.ob-col-header { display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 3px 6px; font-size: 8px; font-weight: 700; letter-spacing: .07em; color: #64747a; text-transform: uppercase; }
+.ob-col-header-right { direction: rtl; }
+.ob-col-header-right span { direction: ltr; }
+.ob-row { position: relative; display: grid; grid-template-columns: 2fr 1fr 1fr; padding: 2px 6px; font-size: 9px; color: #9db4b1; border-radius: 3px; overflow: hidden; line-height: 1.7; }
+.ob-row:hover { background: #141f22; }
+.ob-depth-fill { position: absolute; left: 0; top: 0; bottom: 0; z-index: 0; border-radius: 2px; transition: width 0.3s ease; }
+.ob-row span { position: relative; z-index: 1; }
+.ob-row.bid .ob-depth-fill { left: auto; right: 0; }
+.ob-row.ask { direction: rtl; }
+.ob-row.ask span { direction: ltr; }
+
