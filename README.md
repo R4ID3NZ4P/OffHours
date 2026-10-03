@@ -3,7 +3,7 @@
 > **An AI research desk and risk-aware paper-trading terminal for tokenized US equities, which trade 24/7 while their underlying markets don't.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-[![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.5--Flash-4285F4?style=flat-square&logo=google)](https://ai.google.dev/)
+[![Google Gemini](https://img.shields.io/badge/Google_Gemini-3.5-4285F4?style=flat-square&logo=google)](https://ai.google.dev/)
 [![Bitget](https://img.shields.io/badge/Bitget-Spot_Market_API-00F0FF?style=flat-square)](https://www.bitget.com/api-doc/spot/market/Get-Orderbook)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](#-license)
@@ -61,7 +61,7 @@ Choose how to size the order:
 
 ## 🧠 What the LLM Does (and Doesn't)
 
-**Model:** Google Gemini 2.5 Flash (`gemini-2.5-flash`) via the `@google/genai` SDK. It is overridable with `GEMINI_MODEL`.
+**Model:** Google Gemini 3.5 via the `@google/genai` SDK. Set the exact model ID with `GEMINI_MODEL`.
 
 | Role | Where |
 | :--- | :--- |
@@ -83,7 +83,7 @@ Choose how to size the order:
                           │               │              │               │
                   /api/market-data    /api/ohlcv     /api/orderbook   /api/analyze · /api/news
                           │               │              │               │
-                  Finnhub → Yahoo     Yahoo Finance   Bitget Spot    Gemini 2.5 Flash
+                  Finnhub → Yahoo     Yahoo Finance   Bitget Spot    Gemini 3.5
                    (fallback)                         Market API     (+ Finnhub headlines)
 ```
 
@@ -124,7 +124,7 @@ Create `.env.local` in the project root:
 ```env
 # ── Google Gemini (AI analysis, copilot, sentiment) ─────────────────────────
 GEMINI_API_KEY=your_gemini_api_key
-# GEMINI_MODEL=gemini-2.5-flash          # optional override
+GEMINI_MODEL=your_gemini_3.5_model_id    # exact Gemini 3.5 model ID
 
 # ── Market data (optional – falls back to Yahoo Finance / mock data) ────────
 # FINNHUB_API_KEY=your_finnhub_key
