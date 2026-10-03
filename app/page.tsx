@@ -57,10 +57,38 @@ export interface TradeLogEntry {
   direction: 'Buy' | 'Sell'
   price: number
   quantity: number
-  value: number           // price × quantity
+  value: number           // notional position value (price × quantity)
+  leverage?: number       // multiplier (1 = unleveraged); absent in legacy entries
+  margin?: number         // collateral used = value / leverage; absent in legacy entries
   balanceBefore: number
   balanceAfter: number
-  balanceChange: number   // negative for Buy, positive for Sell
+  balanceChange: number   // negative for Buy, positive for Sell (magnitude = margin)
+}
+
+export type OrderSizeMode = 'qty' | 'usd'
+const LEVERAGE_PRESETS = [1, 2, 5, 10, 20]
+const MAX_LEVERAGE = 20
+
+/**
+ * Resolve order sizing.
+ *  - 'qty': user enters shares; notional = price × qty; margin = notional / leverage
+ *  - 'usd': user enters USD margin to commit; notional = usd × leverage; qty = notional / price
+ */
+function computeOrder(price: number, mode: OrderSizeMode, qtyStr: string, usdStr: string, leverage: number) {
+  const lev = Math.min(MAX_LEVERAGE, Math.max(1, leverage || 1))
+  let qty: number
+  let notional: number
+  let margin: number
+  if (mode === 'usd') {
+    margin = Math.max(0, parseFloat(usdStr) || 0)
+    notional = margin * lev
+    qty = price > 0 ? notional / price : 0
+  } else {
+    qty = Math.max(0, parseFloat(qtyStr) || 0)
+    notional = qty * price
+    margin = notional / lev
+  }
+  return { qty, notional, margin, leverage: lev }
 }
 
 const INITIAL_BALANCE = 10_000
@@ -635,6 +663,9 @@ export default function Page() {
   const [walletConnected, setWalletConnected] = useState(false)
   const [tradeSide, setTradeSide] = useState<'Buy' | 'Sell'>('Buy')
   const [tradeQuantity, setTradeQuantity] = useState('1')
+  const [orderMode, setOrderMode] = useState<OrderSizeMode>('qty')
+  const [tradeUsd, setTradeUsd] = useState('1000')
+  const [leverage, setLeverage] = useState(1)
   const [tradeLog, setTradeLog] = useState<TradeLogEntry[]>([])
   const [accountBalance, setAccountBalance] = useState(INITIAL_BALANCE)
   const [prompt, setPrompt] = useState('')
@@ -714,14 +745,23 @@ export default function Page() {
     return buildChartData(activeData.price, activeData.previousClose)
   }, [activeData?.price, activeData?.previousClose])
 
+  /** Live order sizing preview (qty / notional / margin) */
+  const orderPreview = useMemo(
+    () => computeOrder(activeData?.price ?? 0, orderMode, tradeQuantity, tradeUsd, leverage),
+    [activeData?.price, orderMode, tradeQuantity, tradeUsd, leverage]
+  )
+
   /** Confirm and persist a paper trade */
   const confirmTrade = useCallback(() => {
     if (!activeData) return
-    const qty = Math.max(0.01, parseFloat(tradeQuantity) || 1)
     const price = activeData.price
-    const value = parseFloat((price * qty).toFixed(2))
+    const order = computeOrder(price, orderMode, tradeQuantity, tradeUsd, leverage)
+    if (order.qty <= 0 || order.margin <= 0) return
+    const qty = parseFloat(order.qty.toFixed(6))
+    const value = parseFloat(order.notional.toFixed(2))
+    const margin = parseFloat(order.margin.toFixed(2))
     const balanceBefore = accountBalance
-    const balanceChange = tradeSide === 'Buy' ? -value : value
+    const balanceChange = tradeSide === 'Buy' ? -margin : margin
     const balanceAfter = parseFloat((balanceBefore + balanceChange).toFixed(2))
 
     const entry: TradeLogEntry = {
@@ -732,6 +772,8 @@ export default function Page() {
       price,
       quantity: qty,
       value,
+      leverage: order.leverage,
+      margin,
       balanceBefore,
       balanceAfter,
       balanceChange,
@@ -747,12 +789,12 @@ export default function Page() {
       localStorage.setItem(TRADE_LOG_KEY, JSON.stringify(newLog))
       localStorage.setItem(BALANCE_KEY, String(balanceAfter))
     }
-  }, [activeData, tradeQuantity, tradeSide, accountBalance, tradeLog, selected])
+  }, [activeData, tradeQuantity, tradeUsd, orderMode, leverage, tradeSide, accountBalance, tradeLog, selected])
 
   /** Export trade log as CSV */
   const exportTradeLog = useCallback(() => {
     if (tradeLog.length === 0) return
-    const header = 'ID,Timestamp (UTC),Instrument,Direction,Price (USD),Quantity,Order Value (USD),Balance Before (USD),Balance After (USD),Balance Change (USD)'
+    const header = 'ID,Timestamp (UTC),Instrument,Direction,Price (USD),Quantity,Order Value (USD),Leverage,Margin (USD),Balance Before (USD),Balance After (USD),Balance Change (USD)'
     const rows = tradeLog.map((t) =>
       [
         t.id,
@@ -762,6 +804,8 @@ export default function Page() {
         t.price.toFixed(2),
         t.quantity,
         t.value.toFixed(2),
+        t.leverage ?? 1,
+        (t.margin ?? t.value).toFixed(2),
         t.balanceBefore.toFixed(2),
         t.balanceAfter.toFixed(2),
         t.balanceChange.toFixed(2),
@@ -1697,6 +1741,9 @@ export default function Page() {
                       <div className="trade-log-details">
                         <span>{t.quantity} × ${formatPrice(t.price)}</span>
                         <span>= <b>${formatPrice(t.value)}</b></span>
+                        {(t.leverage ?? 1) > 1 && (
+                          <span className="lev-badge">{t.leverage}x</span>
+                        )}
                         <span className={t.balanceChange >= 0 ? 'gain' : 'loss'} style={{ marginLeft: 'auto' }}>
                           {t.balanceChange >= 0 ? '+' : ''}${formatPrice(Math.abs(t.balanceChange))}
                         </span>
@@ -1768,7 +1815,59 @@ export default function Page() {
               <button className={tradeSide === 'Sell' ? 'active-sell' : ''} onClick={() => setTradeSide('Sell')}>Sell</button>
             </div>
 
+            {/* Order size mode */}
+            <div className="qty-row">
+              <span>Order size by</span>
+              <div className="trade-toggle size-mode-toggle">
+                <button id="mode-qty" className={orderMode === 'qty' ? 'active-buy' : ''} onClick={() => setOrderMode('qty')}>Shares</button>
+                <button id="mode-usd" className={orderMode === 'usd' ? 'active-buy' : ''} onClick={() => setOrderMode('usd')}>USD</button>
+              </div>
+            </div>
+
+            {orderMode === 'usd' && (
+              <div className="qty-row">
+                <span>Amount (USD margin)</span>
+                <div className="qty-control usd-control">
+                  <span className="usd-prefix">$</span>
+                  <input
+                    id="trade-usd-input"
+                    type="number"
+                    min="1"
+                    step="100"
+                    value={tradeUsd}
+                    onChange={(e) => setTradeUsd(e.target.value)}
+                    aria-label="Trade amount in USD"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Leverage selector */}
+            <div className="leverage-block">
+              <div className="qty-row" style={{ padding: '12px 0 6px' }}>
+                <span>Leverage</span>
+                <strong className="lev-value">{leverage}x</strong>
+              </div>
+              <input
+                id="leverage-slider"
+                className="lev-slider"
+                type="range"
+                min="1"
+                max={MAX_LEVERAGE}
+                step="1"
+                value={leverage}
+                onChange={(e) => setLeverage(parseInt(e.target.value, 10))}
+                aria-label="Leverage"
+              />
+              <div className="lev-presets">
+                {LEVERAGE_PRESETS.map((l) => (
+                  <button key={l} className={leverage === l ? 'active' : ''} onClick={() => setLeverage(l)}>{l}x</button>
+                ))}
+              </div>
+            </div>
+
             {/* Quantity selector */}
+            {orderMode === 'qty' && (
             <div className="qty-row">
               <span>Quantity (shares)</span>
               <div className="qty-control">
@@ -1791,11 +1890,15 @@ export default function Page() {
                 >+</button>
               </div>
             </div>
+            )}
 
             <div className="order-summary">
               <span>Execution price <strong>${activeData ? formatPrice(activeData.price) : '—'}</strong></span>
-              <span>Quantity <strong>{tradeQuantity} shares</strong></span>
-              <span>Order value <strong>${activeData ? formatPrice(activeData.price * (parseFloat(tradeQuantity) || 1)) : '—'}</strong></span>
+              <span>Quantity <strong>{activeData ? parseFloat(orderPreview.qty.toFixed(4)) : '—'} shares</strong></span>
+              <span>Position size (notional) <strong>${activeData ? formatPrice(orderPreview.notional) : '—'}</strong></span>
+              <span>Leverage <strong>{orderPreview.leverage}x</strong></span>
+              <span>Margin required <strong>${activeData ? formatPrice(orderPreview.margin) : '—'}</strong></span>
+              <span>Est. liquidation move <strong className="loss">{orderPreview.leverage > 1 ? `∓${(100 / orderPreview.leverage).toFixed(1)}%` : 'None'}</strong></span>
               <span>24H change <strong className={activeData && activeData.changePercent >= 0 ? 'gain' : 'loss'}>{activeData ? formatChange(activeData.changePercent) : '—'}</strong></span>
               <span>Spread vs close <strong className={spreadPct != null && spreadPct >= 0 ? 'gain' : 'loss'}>{spreadPct != null ? `${spreadPct >= 0 ? '+' : ''}${spreadPct.toFixed(2)}%` : '—'}</strong></span>
               <span>Account balance <strong>${formatPrice(accountBalance)}</strong></span>
@@ -1807,13 +1910,14 @@ export default function Page() {
               onClick={confirmTrade}
               disabled={
                 !activeData ||
-                (tradeSide === 'Buy' && accountBalance < activeData.price * (parseFloat(tradeQuantity) || 1))
+                orderPreview.margin <= 0 ||
+                (tradeSide === 'Buy' && accountBalance < orderPreview.margin)
               }
             >
               Confirm {tradeSide} order · Log trade <ArrowUpRight size={16} />
             </button>
             {tradeSide === 'Buy' && activeData &&
-              accountBalance < activeData.price * (parseFloat(tradeQuantity) || 1) && (
+              accountBalance < orderPreview.margin && (
               <small style={{ color: '#fb7185', fontSize: '11px', marginTop: 6, display: 'block', textAlign: 'center' }}>
                 Insufficient paper balance for this order
               </small>

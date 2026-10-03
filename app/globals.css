@@ -72,6 +72,18 @@ button { cursor: pointer; }
 .qty-control input { border: 0; outline: 0; background: #0e191c; color: #e0edea; text-align: center; width: 60px; height: 30px; font-size: 12px; font-weight: 700; -moz-appearance: textfield; }
 .qty-control input::-webkit-outer-spin-button,
 .qty-control input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.size-mode-toggle { margin: 0; min-width: 120px; }
+.size-mode-toggle button { padding: 5px 12px; font-size: 11px; }
+.usd-control .usd-prefix { background: #151f22; color: #35d399; height: 30px; width: 26px; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.usd-control input { width: 110px; }
+.leverage-block { padding-bottom: 4px; }
+.lev-value { color: #35d399; font-size: 13px; }
+.lev-slider { width: 100%; accent-color: #35d399; cursor: pointer; }
+.lev-presets { display: flex; gap: 6px; margin-top: 6px; }
+.lev-presets button { flex: 1; border: 1px solid #2d4145; background: #151f22; color: #a0b4b6; border-radius: 6px; padding: 5px 0; font-size: 11px; font-weight: 700; cursor: pointer; }
+.lev-presets button:hover { background: #1e2e32; color: #35d399; }
+.lev-presets button.active { border-color: #35d399; color: #35d399; background: rgba(53, 211, 153, 0.12); }
+.lev-badge { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border-radius: 4px; padding: 0 5px; font-size: 9px; font-weight: 700; }
 
 /* ── Trade Log panel ─────────────────────────────────────────────────────── */
 .trade-log-panel { display: flex; flex-direction: column; gap: 10px; }
